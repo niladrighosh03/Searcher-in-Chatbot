@@ -4,7 +4,7 @@ import streamlit as st
 key='AIzaSyDE_ldK9alrl9f0QkgrchtwpGMILTVr2qQ'
 genai.configure(api_key=key)
 
-def response(prompt):
+def get_response(prompt):
     if "gemini_model" not in st.session_state:
         st.session_state["gemini_model"] = "gemini-pro"
 
