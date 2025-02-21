@@ -20,3 +20,4 @@ requests
 pandas
 matplotlib
 scikit-learn
+validators
