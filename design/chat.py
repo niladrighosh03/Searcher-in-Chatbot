@@ -1,8 +1,8 @@
 import streamlit as st
-import ai
-def load_chat():
-    """Handles chat messages and AI responses."""
-    
+from design import ai
+
+
+def load_chat():    
     if st.session_state.current_chat:
         st.subheader(st.session_state.current_chat)  # Show chat title
 
@@ -28,3 +28,4 @@ def load_chat():
 
     else:
         st.write("Start a new chat from the sidebar.")
+
