@@ -9,7 +9,7 @@ def load_chat():
 
         
         # YouTube URL input
-        youtube_url = st.text_input("Enter YouTube URL (optional):", 
+        youtube_url = st.text_input("Enter YouTube URL video having Transcript:", 
                                    st.session_state.get("youtube_urls", {}).get(st.session_state.current_chat, ""))
         
         st.button("Submit YouTube URL")
