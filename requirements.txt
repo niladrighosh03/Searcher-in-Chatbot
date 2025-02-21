@@ -21,3 +21,4 @@ pandas
 matplotlib
 scikit-learn
 validators
+import google.generativeai
