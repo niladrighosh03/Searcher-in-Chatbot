@@ -16,4 +16,3 @@ for message in st.session_state.messages:
         
 bar.load_sidebar()
 chat.load_chat()
-
