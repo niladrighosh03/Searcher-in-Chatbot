@@ -65,6 +65,30 @@ def add_chat(chat_title, video_url, user_query, ai_reply):
     print(f"New chat record inserted: {chat_title}")
 
 
+
+def search_chat(chat_title):
+    """
+    Searches for a chat record by chat_title and returns both chat details & timestamp.
+
+    Parameters:
+        chat_title (str): The title of the chat to search for.
+
+    Returns:
+        tuple: (Chat object, timestamp) if found, else (None, None).
+    """
+    session = Session()
+    chat_record = session.query(Chat).filter(Chat.chat_title == chat_title).first()
+    session.close()
+
+    if chat_record:
+        return chat_record, chat_record.created_at  # Returning both chat object and timestamp
+    else:
+        print("Chat title not found.")
+        return None, None
+
+
+
+
 print("Listening for new messages inserts...")
 
 # Keep the script running indefinitely to listen for modifications
