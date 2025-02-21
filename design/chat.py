@@ -1,8 +1,10 @@
 import streamlit as st
 import validators
 from design import youtube_qna as ai
+from data import store
 
 
+    
 def load_chat():    
     if st.session_state.current_chat:
         st.subheader(st.session_state.current_chat)  # Show chat title
@@ -40,6 +42,9 @@ def load_chat():
 
             with st.chat_message("assistant"):
                 st.markdown(response)
+
+            # Save chat to database
+            store.add_chat(st.session_state.current_chat, youtube_url, prompt, response)
 
             # Save chat history
             st.session_state.chats[st.session_state.current_chat].append({"role": "user", "content": prompt})

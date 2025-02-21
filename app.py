@@ -1,5 +1,5 @@
 import streamlit as st 
-from design import bar,chat, gemini #module defined
+from design import bar, chat, gemini #module defined
 
 st.title("💬 YouTube Video Q&A Chatbot")
 st.caption("🚀 A Streamlit chatbot search")

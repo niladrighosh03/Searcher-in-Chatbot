@@ -12,13 +12,23 @@ def load_sidebar():
     if "current_chat" not in st.session_state:
         st.session_state.current_chat = None
 
-    # Button to start a new chat
-    if st.sidebar.button("➕ New Chat"):
-        chat_name = f"Chat {len(st.session_state.chats) + 1}"
-        # chat_id= str(uuid.uuid4().hex[:10])
-        st.session_state.chats[chat_name] = []  # Start new empty chat
-        st.session_state.current_chat = chat_name  # Set as active chat
 
+    # Input field for chat name
+    chat_name = st.sidebar.text_input("Enter Chat Name", "")
+  
+
+    # Button to start a new chat
+    if st.sidebar.button("➕ New Chat"):        
+        if chat_name.strip():  # Ensure chat name is not empty
+            if chat_name in st.session_state.chats:
+                st.sidebar.warning("Chat name already exists! Choose a different name.")
+            else:
+                st.session_state.chats[chat_name] = []  # Start new empty chat
+                st.session_state.current_chat = chat_name  # Set as active chat
+                st.session_state.chat_name_input = ""  # Reset input field
+        else:
+            st.sidebar.error("Please enter a valid chat name.")
+    
 
 
     # Show existing chat sessions
