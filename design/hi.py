@@ -1,2 +1,0 @@
-def hee():
-    print("Hi")
