@@ -21,4 +21,7 @@ pandas
 matplotlib
 scikit-learn
 validators
-import google.generativeai
+google.generativeai
+sqlalchemy
+mysql-connector-python
+mysql-connector
