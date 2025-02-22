@@ -89,6 +89,51 @@ def search_chat(chat_title):
 
 
 
+
+def get_all_chats():
+    """
+    Fetches all chats from the database.
+
+    Returns:
+        list: A list of Chat objects.
+    """
+    session = Session()
+    # chats = session.query(Chat).all()
+    chats = session.query(Chat).order_by(Chat.created_at.desc()).all()  # Sort by latest
+
+    session.close()
+    return chats
+
+
+
+def delete_chat(chat_title):
+    """
+    Deletes a chat record from the 'chats' table by chat_title.
+
+    Parameters:
+        chat_title (str): The title of the chat to delete.
+
+    Returns:
+        bool: True if deletion was successful, False otherwise.
+    """
+    session = Session()
+    chat_record = session.query(Chat).filter(Chat.chat_title == chat_title).first()
+
+    if chat_record:
+        session.delete(chat_record)
+        session.commit()
+        session.close()
+        print(f"Chat '{chat_title}' deleted successfully.")
+        return True
+    else:
+        session.close()
+        print(f"Chat '{chat_title}' not found.")
+        return False
+
+
+
+
+
 print("Listening for new messages inserts...")
 
 # Keep the script running indefinitely to listen for modifications

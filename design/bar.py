@@ -1,6 +1,7 @@
 import streamlit as st
 import uuid
 from data import store
+from design import display_chat
 
 def load_sidebar():
     """Manages sidebar chat selection and new chat creation."""
@@ -39,7 +40,11 @@ def load_sidebar():
                 st.sidebar.success(f"Chat found!\n📅 Timestamp: {chat_time}")
             else:
                 st.sidebar.warning("Chat not found!")
-
+   
+   
+                
+       
+       
     # Show existing chat sessions
     chats_to_delete = []
     for chat_name in list(st.session_state.chats.keys()):
@@ -55,4 +60,9 @@ def load_sidebar():
     for chat_name in chats_to_delete:
         if st.session_state.current_chat == chat_name:
             st.session_state.current_chat = None  # Reset current chat if deleted
-        del st.session_state.chats[chat_name]
+        del st.session_state.chats[chat_name]      
+       
+       
+    display_chat.show_chats()         
+
+
