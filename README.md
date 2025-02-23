@@ -94,6 +94,6 @@ streamlit run app.py
 ---
 
 ### **📷 Preview Screenshot**  
-![Project Structure](pic2.png)
-![Project Structure](pic.png)
+![Project Structure](assets/pic2.png)
+![Project Structure](assets/pic.png)
 
