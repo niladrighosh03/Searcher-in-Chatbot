@@ -155,7 +155,7 @@ def get_chat_by_id(chat_id):
     Returns:
         Chat: The chat record if found, else None.
     """
-    return session.query(Chat).filter_by(chat_id=chat_id).first()
+    return session.query(Chat).filter_by(chat_id=chat_id).order_by(Chat.created_at.asc()).all()
 
 
 

@@ -15,14 +15,14 @@ def load_sidebar():
     if "search_results" not in st.session_state:
         st.session_state.search_results = []  # Store search results
 
+
+
+
+
+
+
     # Input field for chat name
     chat_name = st.sidebar.text_input("Enter Chat Name", "")
-
-
-
-
-
-
     # Button to start a new chat
     if st.sidebar.button("➕ New Chat"):        
         chat_name = chat_name.strip()
