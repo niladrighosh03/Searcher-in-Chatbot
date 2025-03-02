@@ -53,6 +53,8 @@ def load_sidebar():
                 st.session_state.search_results = []  # Reset search results
                 st.sidebar.warning("⚠️ No matching chats found!")
 
+
+
     # Display search results with clickable chat names
     if st.session_state.search_results:
         st.sidebar.markdown("### 🔎 Search Results")
