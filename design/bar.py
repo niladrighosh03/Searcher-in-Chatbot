@@ -12,6 +12,8 @@ def load_sidebar():
         st.session_state.chats = {}  # Dictionary to store chat history
     if "current_chat" not in st.session_state:
         st.session_state.current_chat = None
+    if "search_results" not in st.session_state:
+        st.session_state.search_results = []  # Store search results
 
     # Input field for chat name
     chat_name = st.sidebar.text_input("Enter Chat Name", "")
@@ -34,17 +36,29 @@ def load_sidebar():
     if st.sidebar.button("🔍 Search"):
         search_query = search_query.strip()
         if search_query:
-            chat, chat_time = store.search_chat(search_query)  # Fetch chat & timestamp
-            if chat:
-                st.session_state.current_chat = chat.chat_title  # FIXED: Use chat_title
-                st.sidebar.success(f"Chat found!\n📅 Timestamp: {chat_time}")
+            results = store.search_chat(search_query)  # Fetch list of matching chats
+            if results:
+                st.session_state.search_results = results  # Store search results
+                st.sidebar.success(f"✅ {len(results)} messages(s) found!")
             else:
-                st.sidebar.warning("Chat not found!")
-   
-   
-                
-       
-       
+                st.session_state.search_results = []  # Reset search results
+                st.sidebar.warning("⚠️ No matching chats found!")
+
+    # Display search results with clickable chat names
+    if st.session_state.search_results:
+        st.sidebar.markdown("### 🔎 Search Results")
+        for chat, chat_time in st.session_state.search_results:
+            if st.sidebar.button(f"{chat.chat_title} 🕒 {chat_time}", key=f"search_{chat.chat_id}"):
+
+                display_chat.search_chats(chat.chat_id)  # Display selected chat
+                # st.session_state.current_chat = chat.chat_title  # Set selected chat
+                # st.session_state.search_results = []  # Clear search results
+                # st.session_state.chats[chat.chat_title] = store.get_chat_messages(chat.chat_title)  # Load messages
+
+
+
+
+
     # Show existing chat sessions
     chats_to_delete = []
     for chat_name in list(st.session_state.chats.keys()):
@@ -61,8 +75,6 @@ def load_sidebar():
         if st.session_state.current_chat == chat_name:
             st.session_state.current_chat = None  # Reset current chat if deleted
         del st.session_state.chats[chat_name]      
-       
-       
-    display_chat.show_chats()         
 
-
+    # Display the selected chat
+    display_chat.show_chats()

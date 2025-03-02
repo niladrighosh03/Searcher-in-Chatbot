@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, Table, MetaData, Column, Integer, String, Text, ForeignKey, BigInteger, TIMESTAMP, func
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy import event
+from sqlalchemy import or_
 import time
 
 
@@ -66,25 +67,35 @@ def add_chat(chat_title, video_url, user_query, ai_reply):
 
 
 
-def search_chat(chat_title):
+
+def search_chat(search_term):
     """
-    Searches for a chat record by chat_title and returns both chat details & timestamp.
+    Searches for a chat record based on a search term across multiple columns using the LIKE operation.
 
     Parameters:
-        chat_title (str): The title of the chat to search for.
+        search_term (str): The term to search for.
 
     Returns:
-        tuple: (Chat object, timestamp) if found, else (None, None).
+        list of tuples: [(Chat object, timestamp), ...] if found, else an empty list.
     """
     session = Session()
-    chat_record = session.query(Chat).filter(Chat.chat_title == chat_title).first()
+    search_pattern = f"%{search_term}%"
+
+    chat_records = session.query(Chat).filter(
+        or_(
+            Chat.chat_title.like(search_pattern),
+            Chat.user_query.like(search_pattern),  # Assuming there's a content field
+            Chat.ai_reply.like(search_pattern)  # Assuming there's a user_name field
+        )
+    ).all()
+
     session.close()
 
-    if chat_record:
-        return chat_record, chat_record.created_at  # Returning both chat object and timestamp
+    if chat_records:
+        return [(chat, chat.created_at) for chat in chat_records]
     else:
-        print("Chat title not found.")
-        return None, None
+        print("No matching chats found.")
+        return []
 
 
 
@@ -131,6 +142,17 @@ def delete_chat(chat_title):
         return False
 
 
+def get_chat_by_id(chat_id):
+    """
+    Fetches a chat record by its ID.
+    
+    Parameters:
+        chat_id (int): The ID of the chat to fetch.
+    
+    Returns:
+        Chat: The chat record if found, else None.
+    """
+    return session.query(Chat).filter_by(chat_id=chat_id).first()
 
 
 
