@@ -40,7 +40,10 @@ event.listen(Chat, 'after_insert', chats_table_insert_listener)
 
 # Create a session to use the listener
 Session = sessionmaker(bind=engine)
-session = Session()
+# session = Session()
+from sqlalchemy.orm import scoped_session
+
+session = scoped_session(sessionmaker(bind=engine))
 
 
 
@@ -153,6 +156,38 @@ def get_chat_by_id(chat_id):
         Chat: The chat record if found, else None.
     """
     return session.query(Chat).filter_by(chat_id=chat_id).first()
+
+
+
+#delete chats
+def delete_chat(chat_title):
+    """
+    Deletes a chat from the 'chats' table based on its title.
+    
+    Parameters:
+        chat_title (str): The title of the chat to be deleted.
+    """
+    session.query(Chat).filter(Chat.chat_title == chat_title).delete()
+    session.commit()
+    print(f"Chat '{chat_title}' deleted successfully.")
+
+
+def chat_title_exists(chat_title):
+    """
+    Checks if a chat with the given title exists in the database.
+
+    Args:
+        chat_title (str): The title of the chat.
+
+    Returns:
+        bool: True if the chat title exists, False otherwise.
+    """
+    session_obj = Session()
+    exists = session_obj.query(Chat).filter(Chat.chat_title == chat_title).first() is not None
+    session_obj.close()
+    return exists
+
+
 
 
 
