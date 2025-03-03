@@ -14,13 +14,52 @@ def load_sidebar():
         st.session_state.current_chat = None
     if "search_results" not in st.session_state:
         st.session_state.search_results = []  # Store search results
+    if "selected_user" not in st.session_state:
+        st.session_state.selected_user = None  # Store selected user
 
 
 
+    # User selection dropdown
+    # users = store.get_all_users()  # Fetch list of users from the database
+    st.session_state.selected_user = st.sidebar.selectbox("Select User", ['raj','ram', 'admin'])
+    
+    
+    
+    
+    if st.session_state.selected_user=='admin':
+            # Checkbox to toggle feedback visibility
+        show_feedbacks = st.sidebar.checkbox("📊 Show Chat Feedback Summary", value=False)
 
+        if show_feedbacks:
+            top_feedbacks, bottom_feedbacks = store.get_top_bottom_feedbacks()
 
+            if top_feedbacks or bottom_feedbacks:
+                st.sidebar.markdown("## 📊 Chat Feedback Summary")
 
+                # Show Top 4 Feedbacks
+                if top_feedbacks:
+                    st.sidebar.markdown("### 🔥 Top 4 Feedbacks")
+                    for chat in top_feedbacks:
+                        st.sidebar.write(f"⭐ {chat.feedback_rating}/20 - {chat.chat_title}")
+                        st.sidebar.caption(f"💬 {chat.feedback}")
 
+                # Show Bottom 4 Feedbacks
+                if bottom_feedbacks:
+                    st.sidebar.markdown("### ❌ Bottom 4 Feedbacks")
+                    for chat in bottom_feedbacks:
+                        st.sidebar.write(f"⚠️ {chat.feedback_rating}/20 - {chat.chat_title}")
+                        st.sidebar.caption(f"💬 {chat.feedback}")
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     # Input field for chat name
     chat_name = st.sidebar.text_input("Enter Chat Name", "")
     # Button to start a new chat
@@ -36,10 +75,6 @@ def load_sidebar():
         else:
             st.sidebar.error("Please enter a valid chat name.")
 
-
-
-
-
     # Search functionality
     search_query = st.sidebar.text_input("Search Chat", "")
     if st.sidebar.button("🔍 Search"):
@@ -53,24 +88,12 @@ def load_sidebar():
                 st.session_state.search_results = []  # Reset search results
                 st.sidebar.warning("⚠️ No matching chats found!")
 
-
-
     # Display search results with clickable chat names
     if st.session_state.search_results:
         st.sidebar.markdown("### 🔎 Search Results")
         for chat, chat_time in st.session_state.search_results:
             if st.sidebar.button(f"{chat.chat_title} 🕒 {chat_time}", key=f"search_{chat.chat_id}"):
-
                 display_chat.search_chats(chat.chat_id)  # Display selected chat
-                # st.session_state.current_chat = chat.chat_title  # Set selected chat
-                # st.session_state.search_results = []  # Clear search results
-                # st.session_state.chats[chat.chat_title] = store.get_chat_messages(chat.chat_title)  # Load messages
-
-
-
-
-
-
 
     # Show existing chat sessions
     chats_to_delete = []
@@ -90,13 +113,8 @@ def load_sidebar():
         
         del st.session_state.chats[chat_title]  # Remove from UI
         store.delete_chat(chat_title)  # Remove from Database  ✅ Added this line
-
+        
         st.rerun()  # Refresh UI ✅ Added this to reflect changes instantly
-
-
-
-
 
     # Display the selected chat
     display_chat.show_chats()
-

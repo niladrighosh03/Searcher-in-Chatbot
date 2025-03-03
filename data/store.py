@@ -4,7 +4,6 @@ from sqlalchemy import event
 from sqlalchemy import or_
 import time
 
-
 # Database connection details
 username = 'nigo'
 password = 'admin'
@@ -15,9 +14,8 @@ database_name = 'chatdb'
 # Connect to MySQL database
 engine = create_engine(f'mysql+mysqlconnector://{username}:{password}@{hostname}:{port}/{database_name}')
 
-'''the parent class for all ORM models.'''
+'''The parent class for all ORM models.'''
 Base = declarative_base()
-
 
 # Define a class to map to the 'chats' table
 class Chat(Base):
@@ -28,171 +26,117 @@ class Chat(Base):
     video_url = Column(Text, nullable=True)
     user_query = Column(Text, nullable=False)
     ai_reply = Column(Text, nullable=False)
+    user = Column(String(255), nullable=False)  # New column
+    feedback = Column(Text, nullable=True)  # New column
+    feedback_rating = Column(Integer, nullable=True)  # New column
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
-
 
 # Define a function to handle modifications to the 'chats' table after insertion
 def chats_table_insert_listener(mapper, connection, target):
     print("New record inserted into 'chats' table!")
 
-# Attach the event listener to the 'after_insert' event for the Book class
+# Attach the event listener to the 'after_insert' event for the Chat class
 event.listen(Chat, 'after_insert', chats_table_insert_listener)
 
 # Create a session to use the listener
 Session = sessionmaker(bind=engine)
-# session = Session()
 from sqlalchemy.orm import scoped_session
-
 session = scoped_session(sessionmaker(bind=engine))
 
-
-
-def add_chat(chat_title, video_url, user_query, ai_reply):
+def add_chat(chat_title, video_url, user_query, ai_reply, user, feedback=None, feedback_rating=None):
     """
     Inserts a new chat record into the 'chats' table.
-    
-    Parameters:
-        chat_title (str): The title of the chat.
-        video_url (str): The URL of the related video (can be None).
-        user_query (str): The query asked by the user.
-        ai_reply (str): The AI's response to the query.
     """
     new_chat = Chat(
         chat_title=chat_title,
         video_url=video_url,
         user_query=user_query,
-        ai_reply=ai_reply
+        ai_reply=ai_reply,
+        user=user,
+        feedback=feedback,
+        feedback_rating=feedback_rating
     )
-
     session.add(new_chat)
     session.commit()
     print(f"New chat record inserted: {chat_title}")
 
-
-
-
 def search_chat(search_term):
     """
     Searches for a chat record based on a search term across multiple columns using the LIKE operation.
-
-    Parameters:
-        search_term (str): The term to search for.
-
-    Returns:
-        list of tuples: [(Chat object, timestamp), ...] if found, else an empty list.
     """
     session = Session()
     search_pattern = f"%{search_term}%"
-
     chat_records = session.query(Chat).filter(
         or_(
             Chat.chat_title.like(search_pattern),
-            Chat.user_query.like(search_pattern),  # Assuming there's a content field
-            Chat.ai_reply.like(search_pattern)  # Assuming there's a user_name field
+            Chat.user_query.like(search_pattern),
+            Chat.ai_reply.like(search_pattern),
+            Chat.user.like(search_pattern),
+            Chat.feedback.like(search_pattern)
         )
     ).all()
-
     session.close()
-
-    if chat_records:
-        return [(chat, chat.created_at) for chat in chat_records]
-    else:
-        print("No matching chats found.")
-        return []
-
-
-
-
+    return [(chat, chat.created_at) for chat in chat_records] if chat_records else []
 
 def get_all_chats():
-    """
-    Fetches all chats from the database.
-
-    Returns:
-        list: A list of Chat objects.
-    """
+    """Fetches all chats from the database."""
     session = Session()
-    # chats = session.query(Chat).all()
-    chats = session.query(Chat).order_by(Chat.created_at.desc()).all()  # Sort by latest
-
+    chats = session.query(Chat).order_by(Chat.created_at.desc()).all()
     session.close()
     return chats
 
-
-
 def delete_chat(chat_title):
-    """
-    Deletes a chat record from the 'chats' table by chat_title.
-
-    Parameters:
-        chat_title (str): The title of the chat to delete.
-
-    Returns:
-        bool: True if deletion was successful, False otherwise.
-    """
-    session = Session()
-    chat_record = session.query(Chat).filter(Chat.chat_title == chat_title).first()
-
-    if chat_record:
-        session.delete(chat_record)
-        session.commit()
-        session.close()
-        print(f"Chat '{chat_title}' deleted successfully.")
-        return True
-    else:
-        session.close()
-        print(f"Chat '{chat_title}' not found.")
-        return False
-
-
-def get_chat_by_id(chat_id):
-    """
-    Fetches a chat record by its ID.
-    
-    Parameters:
-        chat_id (int): The ID of the chat to fetch.
-    
-    Returns:
-        Chat: The chat record if found, else None.
-    """
-    return session.query(Chat).filter_by(chat_id=chat_id).order_by(Chat.created_at.asc()).all()
-
-
-
-#delete chats
-def delete_chat(chat_title):
-    """
-    Deletes a chat from the 'chats' table based on its title.
-    
-    Parameters:
-        chat_title (str): The title of the chat to be deleted.
-    """
+    """Deletes a chat from the 'chats' table based on its title."""
     session.query(Chat).filter(Chat.chat_title == chat_title).delete()
     session.commit()
     print(f"Chat '{chat_title}' deleted successfully.")
 
+def get_chat_by_id(chat_id):
+    """Fetches a chat record by its ID."""
+    return session.query(Chat).filter_by(chat_id=chat_id).order_by(Chat.created_at.asc()).all()
 
 def chat_title_exists(chat_title):
-    """
-    Checks if a chat with the given title exists in the database.
-
-    Args:
-        chat_title (str): The title of the chat.
-
-    Returns:
-        bool: True if the chat title exists, False otherwise.
-    """
+    """Checks if a chat with the given title exists in the database."""
     session_obj = Session()
     exists = session_obj.query(Chat).filter(Chat.chat_title == chat_title).first() is not None
     session_obj.close()
     return exists
 
+def save_feedback(chat_title, feedback, feedback_rating):
+    """
+    Updates the feedback and feedback rating for the latest chat record with the given title.
+    """
+    session_obj = Session()
+    chat_record = session_obj.query(Chat).filter_by(chat_title=chat_title).order_by(Chat.created_at.desc()).first()
+    
+    if chat_record:
+        chat_record.feedback = feedback
+        chat_record.feedback_rating = feedback_rating
+        session_obj.commit()
+        print(f"Feedback updated for chat title '{chat_title}' (Chat ID: {chat_record.chat_id})")
+    else:
+        print(f"No chat found with title '{chat_title}'")
+    
+    session_obj.close()
 
 
+
+
+def get_top_bottom_feedbacks():
+    """
+    Fetch top 4 highest-rated and bottom 4 lowest-rated feedbacks.
+    """
+    session_obj = Session()
+
+    top_feedbacks = session_obj.query(Chat).filter(Chat.feedback_rating.isnot(None)) \
+        .order_by(Chat.feedback_rating.desc()).limit(4).all()
+
+    bottom_feedbacks = session_obj.query(Chat).filter(Chat.feedback_rating.isnot(None)) \
+        .order_by(Chat.feedback_rating.asc()).limit(4).all()
+
+    session_obj.close()
+    
+    return top_feedbacks, bottom_feedbacks
 
 
 print("Listening for new messages inserts...")
-
-# Keep the script running indefinitely to listen for modifications
-# while True:
-#     time.sleep(1)  # Sleep for 1 second before checking for modifications
